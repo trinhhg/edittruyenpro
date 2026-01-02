@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - ET Pro</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #fff; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        input, button { padding: 8px; background: #333; border: 1px solid #555; color: white; }
+        button:hover { background: #444; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .tag-temp { background: #f59e0b; color: black; }
+        .tag-official { background: #10b981; color: black; }
+        .action-btn { margin-right: 5px; font-size: 11px; }
+        .btn-approve { background: #059669; }
+        .btn-revoke { background: #b91c1c; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>ADMIN CONTROL PANEL</h2>
+        <div>
+            <input type="password" id="secret-key" placeholder="Enter Admin Secret...">
+            <button onclick="loadKeys()">Load Data</button>
+        </div>
+    </div>
+
+    <div id="msg"></div>
+
+    <h3>Danh sách Key (Tạm & Chính thức)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Type</th>
+                <th>Paid</th>
+                <th>Devices</th>
+                <th>Expires</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <script>
+        const API = "/api/admin";
+        
+        async function fetchAPI(endpoint, method = "GET", body = null) {
+            const secret = document.getElementById('secret-key').value;
+            if(!secret) return alert("Nhập Secret Key trước!");
+            
+            const headers = { "X-Admin-Secret": secret, "Content-Type": "application/json" };
+            const opts = { method, headers };
+            if(body) opts.body = JSON.stringify(body);
+            
+            return fetch(API + endpoint, opts);
+        }
+
+        async function loadKeys() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+            
+            // Load Temp
+            const res1 = await fetchAPI("/list?type=temp");
+            const temps = res1.ok ? await res1.json() : [];
+            
+            // Load Official
+            const res2 = await fetchAPI("/list?type=official");
+            const officials = res2.ok ? await res2.json() : [];
+
+            const all = [...temps, ...officials];
+            tbody.innerHTML = "";
+            
+            all.forEach(k => {
+                const row = document.createElement('tr');
+                const expDate = new Date(k.expires_at).toLocaleString();
+                row.innerHTML = `
+                    <td>${k.key}</td>
+                    <td><span class="tag tag-${k.type}">${k.type}</span></td>
+                    <td>${k.paid_amount || 0}</td>
+                    <td>${k.devices.length}/${k.max_devices || 1} <button class="action-btn" onclick="resetDevice('${k.key}')">Reset</button></td>
+                    <td>${expDate}</td>
+                    <td>
+                        ${k.type === 'temp' ? `<button class="action-btn btn-approve" onclick="approve('${k.key}', ${k.paid_amount})">Duyệt</button>` : ''}
+                        <button class="action-btn btn-revoke">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function approve(key, amount) {
+            // Tự tính ngày dựa trên tiền
+            // Gói 80k/30 ngày -> ~2666/ngày. Gói 40k -> ~1333
+            let days = 1;
+            if (amount >= 75000) days = 30; // Đội nhóm
+            else if (amount >= 35000) days = 30; // Cá nhân
+            else days = Math.floor(amount / 2000); // Mặc định chia 2000đ/ngày
+
+            const conf = prompt(`Duyệt Key này?\nSố tiền: ${amount}\nSố ngày cấp (tự tính):`, days);
+            if(conf) {
+                const res = await fetchAPI("/upgrade", "POST", { key, days: parseInt(conf), max_devices: amount > 50000 ? 3 : 1 });
+                if(res.ok) { alert("Done!"); loadKeys(); }
+            }
+        }
+        
+        async function resetDevice(key) {
+             if(confirm("Xóa thiết bị của key này?")) {
+                 await fetchAPI("/reset-device", "POST", { key });
+                 loadKeys();
+             }
+        }
+    </script>
+</body>
+</html>
