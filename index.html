@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EditTruyenPro - Tool Biên Tập Truyện VIP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+    <div id="landing-overlay" class="landing-wrapper">
+        <div class="landing-content">
+            <div class="hero-section">
+                <h1>EDIT TRUYỆN PRO</h1>
+                <p>Công cụ biên tập, convert truyện tự động với công nghệ Regex thông minh.</p>
+                
+                <div class="login-box">
+                    <input type="text" id="login-key" placeholder="Nhập Key (TEMP-XXX hoặc OFFICIAL-XXX)">
+                    <button id="btn-login" class="btn btn-primary">KÍCH HOẠT & VÀO TOOL</button>
+                    <div id="login-msg" class="msg-error"></div>
+                </div>
+            </div>
+
+            <div class="pricing-section">
+                <h3>Bảng Tính Giá Tự Động</h3>
+                <div class="price-calculator">
+                    <div class="price-row">
+                        <label>Loại gói:</label>
+                        <select id="price-type">
+                            <option value="personal">Cá Nhân (1 máy)</option>
+                            <option value="group">Đội Nhóm (3 máy)</option>
+                        </select>
+                    </div>
+                    <div class="price-row">
+                        <label>Số ngày:</label>
+                        <input type="number" id="price-days" value="30" min="1" max="365">
+                    </div>
+                    <div class="total-price">
+                        Tổng: <span id="display-price">0</span> VNĐ
+                    </div>
+                    <button id="btn-get-qr" class="btn btn-success full-width">LẤY MÃ QR THANH TOÁN</button>
+                </div>
+                <div id="qr-area" class="hidden">
+                    <img id="qr-img" src="" alt="QR Code">
+                    <p>Nội dung CK: <b id="qr-content">...</b></p>
+                    <p class="note">Hệ thống tự động cấp Key sau 1-3 phút.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="app-container hidden">
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <h2>ET PRO</h2>
+                <span class="badge-vip">VIP MEMBER</span>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="tab-settings">
+                    ⚙️ Cài đặt & Từ điển
+                </button>
+                <button class="nav-btn" data-tab="tab-replace">
+                    📝 Thay thế & Edit
+                </button>
+                <button class="nav-btn" data-tab="tab-split">
+                    ✂️ Chia chương
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="key-info">Hạn: <span id="expire-date">...</span></div>
+                <button id="btn-logout" class="btn btn-sm btn-danger">Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="app-content">
+            <section id="tab-settings" class="content-panel active">
+                <h2>Cấu Hình Thay Thế</h2>
+                
+                <div class="settings-group">
+                    <label>Chế độ Format Hội Thoại (Sau dấu hai chấm :)</label>
+                    <div class="format-options">
+                        <label class="radio-card">
+                            <input type="radio" name="dialogue-mode" value="0" checked>
+                            <span>Giữ nguyên</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="dialogue-mode" value="1">
+                            <span>Inline (Cùng dòng)</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="dialogue-mode" value="2">
+                            <span>Newline (Xuống dòng)</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="dialogue-mode" value="3">
+                            <span>Dash (Gạch đầu dòng)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <label>Từ điển Thay Thế (Find -> Replace)</label>
+                    <div class="dict-actions">
+                        <button id="btn-add-pair" class="btn btn-sm btn-secondary">+ Thêm dòng</button>
+                        <button id="btn-save-settings" class="btn btn-sm btn-primary">Lưu Cấu Hình</button>
+                        <button id="btn-export-csv" class="btn btn-sm btn-outline">Xuất CSV</button>
+                        <input type="file" id="file-import-csv" class="hidden" accept=".csv">
+                        <button id="btn-import-csv" class="btn btn-sm btn-outline">Nhập CSV</button>
+                    </div>
+                    <div id="dictionary-list" class="dict-list custom-scrollbar">
+                        </div>
+                </div>
+            </section>
+
+            <section id="tab-replace" class="content-panel">
+                <div class="split-view">
+                    <div class="pane input-pane">
+                        <div class="pane-head">Văn bản gốc</div>
+                        <textarea id="input-text" class="custom-scrollbar" placeholder="Paste text convert vào đây..."></textarea>
+                    </div>
+                    <div class="pane output-pane">
+                        <div class="pane-head">
+                            Kết quả
+                            <button id="btn-run-replace" class="btn btn-primary btn-sm">⚡ THỰC HIỆN</button>
+                        </div>
+                        <div id="output-result" class="output-div custom-scrollbar" contenteditable="true"></div>
+                        <button id="btn-copy-result" class="btn btn-success full-width">Sao chép kết quả</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-split" class="content-panel">
+                <h2>Chia nhỏ File Truyện</h2>
+                <div class="split-controls">
+                    <select id="split-method">
+                        <option value="count">Theo số phần (đều nhau)</option>
+                        <option value="regex">Theo từ khóa (Chương/Hồi)</option>
+                    </select>
+                    <input type="number" id="split-count" value="5" placeholder="Số phần" style="width: 80px">
+                    <input type="text" id="split-regex" value="^(Chương|Hồi)\s+\d+" class="hidden" placeholder="Regex...">
+                    <button id="btn-run-split" class="btn btn-primary">Bắt đầu chia</button>
+                </div>
+                <div id="split-results" class="split-grid custom-scrollbar"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
