@@ -2,200 +2,70 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>TrinhHG Admin Panel</title>
+    <title>Admin Tool - EditTruyenPro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; padding: 20px; color: #334155; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #1e293b; margin-top: 0; }
-        
-        .config-box { background: #eff6ff; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #dbeafe; display: flex; align-items: center; gap: 10px; }
-        .config-box input { flex: 1; }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; }
-        .tab { padding: 10px 20px; cursor: pointer; font-weight: bold; color: #64748b; }
-        .tab.active { color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px; }
-        .panel { display: none; }
-        .panel.active { display: block; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 13px; }
-        th { background: #f8fafc; font-weight: 700; color: #475569; }
-        
-        .btn { padding: 6px 12px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 12px; }
-        .btn-approve { background: #10b981; }
-        .btn-reject { background: #ef4444; }
-        .btn-refresh { background: #3b82f6; padding: 8px 15px; margin-bottom: 10px; width: auto; }
-        
-        .badge { padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
-        .badge-green { background: #dcfce7; color: #166534; }
-        .badge-red { background: #fee2e2; color: #991b1b; }
-        .time-left { font-family: monospace; color: #d97706; font-weight: bold; }
-        
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        input, select { padding: 8px; width: 100%; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .gen-btn { width: 100%; background: #2563eb; color: white; padding: 10px; border: none; border-radius: 4px; margin-top: 10px; cursor: pointer; }
+        body { font-family: monospace; padding: 20px; background: #222; color: #0f0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background: #333; color: white; }
+        button { cursor: pointer; padding: 5px 10px; }
+        .btn-del { background: red; color: white; border: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>QUẢN TRỊ HỆ THỐNG</h1>
-        <div class="config-box">
-            <label><strong>Link Web:</strong></label>
-            <input type="text" id="api-url" placeholder="https://hotrodichtruyen.pages.dev" value="https://hotrodichtruyen.pages.dev">
-        </div>
-
-        <div class="tabs">
-            <div class="tab" onclick="switchTab('create')">Tạo Key</div>
-            <div class="tab active" onclick="switchTab('approve')">Duyệt Key Tạm</div>
-            <div class="tab" onclick="switchTab('official')">Key Chính Thức</div>
-        </div>
-
-        <div id="create" class="panel">
-            <h3>Tạo Key Thủ Công</h3>
-            <div class="grid-2">
-                <div><label>Loại:</label><select id="mn-type"><option value="permanent">Official</option><option value="temp">Temp</option></select></div>
-                <div><label>Thiết bị:</label><input type="number" id="mn-dev" value="2"></div>
-                <div><label>Ngày:</label><input type="number" id="mn-days" value="30"></div>
-                <div><label>Ghi chú:</label><input type="text" id="mn-note" placeholder="Tên khách"></div>
-            </div>
-            <button class="gen-btn" onclick="genManual()">TẠO DATA JSON</button>
-            <textarea id="mn-out" style="width:100%; height:100px; margin-top:10px; font-family:monospace;"></textarea>
-        </div>
-
-        <div id="approve" class="panel active">
-            <button class="btn btn-refresh" onclick="loadKeys('temp')">🔄 Tải danh sách Key Tạm</button>
-            <table>
-                <thead>
-                    <tr><th>Key Tạm</th><th>Thông tin GD</th><th>Số tiền</th><th>Trạng thái</th><th>Hành động</th></tr>
-                </thead>
-                <tbody id="temp-table-body"><tr><td colspan="5">Chưa tải dữ liệu...</td></tr></tbody>
-            </table>
-        </div>
-
-        <div id="official" class="panel">
-            <button class="btn btn-refresh" onclick="loadKeys('official')">🔄 Tải danh sách Key Chính Thức</button>
-            <table>
-                <thead>
-                    <tr><th>License Key</th><th>Ghi chú / Code</th><th>Thiết bị</th><th>Hết hạn (Còn lại)</th><th>Hành động</th></tr>
-                </thead>
-                <tbody id="official-table-body"><tr><td colspan="5">Chưa tải dữ liệu...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
+    <h1>ADMIN CONTROL PANEL</h1>
+    <button onclick="loadKeys()">🔄 Refresh List</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Expiration</th>
+                <th>Plan</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="key-list">
+            </tbody>
+    </table>
 
     <script>
-        const ADMIN_SECRET = "trinhhg_admin_secret_123";
+        const API_HOST = "https://edittruyenpro.pages.dev"; // Domain Worker
 
-        function switchTab(id) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
-            if(id === 'approve') loadKeys('temp');
-            if(id === 'official') loadKeys('official');
-        }
-
-        async function loadKeys(type) {
-            const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
-            const tbody = document.getElementById(type === 'temp' ? 'temp-table-body' : 'official-table-body');
-            tbody.innerHTML = '<tr><td colspan="5">Đang tải...</td></tr>';
-
+        async function loadKeys() {
             try {
-                const res = await fetch(`${baseUrl}/api/admin/list?type=${type}`, { 
-                    method: 'GET',
-                    headers: { 'x-admin-secret': ADMIN_SECRET, 'Content-Type': 'application/json' } 
-                });
-                
-                if(!res.ok) throw new Error("Kết nối thất bại");
+                // Lưu ý: Worker cần mở endpoint /api/admin/list cho public hoặc thêm header auth
+                const res = await fetch(`${API_HOST}/api/admin/list`);
                 const data = await res.json();
                 
+                const tbody = document.getElementById('key-list');
                 tbody.innerHTML = '';
-                if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="5">Không có dữ liệu.</td></tr>'; return; }
-
-                data.forEach(item => {
-                    const row = document.createElement('tr');
-                    
-                    if(type === 'temp') {
-                        const paid = item.paid_amount || 0;
-                        let statusHtml = '';
-                        if(paid >= 40000) statusHtml = `<span class="badge badge-green">Gói Tháng</span>`;
-                        else if(paid >= 15000) statusHtml = `<span class="badge badge-green">Gói Tuần</span>`;
-                        else if(paid > 0) statusHtml = `<span class="badge badge-red">Lẻ/Thiếu</span>`;
-                        else statusHtml = `<span class="badge badge-red">0đ</span>`;
-
-                        row.innerHTML = `
-                            <td style="font-family:monospace; color:#2563eb;">${item.key}</td>
-                            <td><b>${item.trans_code||'-'}</b><br><small>${item.raw_message || ''}</small></td>
-                            <td style="font-weight:bold;">${paid.toLocaleString()} đ</td>
-                            <td>${statusHtml}</td>
-                            <td style="display:flex; gap:5px;">
-                                <button class="btn btn-approve" onclick="upgradeKey('${item.key}', ${paid})">DUYỆT</button>
-                                <button class="btn btn-reject" onclick="deleteKey('${item.key}')">KHÔNG DUYỆT</button>
-                            </td>`;
-                    } else {
-                        const timeLeft = calculateTimeLeft(item.expires_at);
-                        row.innerHTML = `
-                            <td style="font-family:monospace; color:#2563eb;">${item.key}</td>
-                            <td>${item.note || item.trans_code || '-'}</td>
-                            <td>${(item.devices||[]).length}/${item.max_devices}</td>
-                            <td>${new Date(item.expires_at).toLocaleDateString('vi-VN')} <br> <span class="time-left">(${timeLeft})</span></td>
-                            <td><button class="btn btn-reject" onclick="deleteKey('${item.key}')">XÓA KEY</button></td>`;
-                    }
-                    tbody.appendChild(row);
+                
+                // KV List trả về { keys: [{name: "...", metadata: ...}] }
+                // Để lấy value chi tiết cần loop fetch get, nhưng demo list trước
+                data.keys.forEach(k => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${k.name}</td>
+                        <td>-- (Cần fetch detail) --</td>
+                        <td>--</td>
+                        <td>
+                            <button class="btn-del" onclick="deleteKey('${k.name}')">DEL</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
                 });
-            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" style="color:red">Lỗi: ${e.message}</td></tr>`; }
+            } catch (e) {
+                alert('Lỗi kết nối hoặc chưa cấu hình Admin API');
+                console.error(e);
+            }
         }
 
-        function calculateTimeLeft(expiry) {
-            const now = Date.now();
-            const diff = expiry - now;
-            if(diff <= 0) return "Hết hạn";
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            return `${days} ngày ${hours} giờ`;
-        }
-
-        async function upgradeKey(key, amount) {
-            const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
-            let days = 30; if(amount < 20000) days = 7;
-            const finalDays = prompt(`Duyệt key này bao nhiêu ngày?\n(Tiền nhận: ${amount.toLocaleString()}đ)`, days);
-            if(!finalDays) return;
-
-            try {
-                const res = await fetch(`${baseUrl}/api/admin/upgrade`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
-                    body: JSON.stringify({ key, duration: parseInt(finalDays) * 86400, devices: 2 })
-                });
-                const d = await res.json();
-                if(d.success) { alert("Thành công!"); loadKeys('temp'); } else alert("Lỗi: " + d.message);
-            } catch(e) { alert("Lỗi kết nối"); }
-        }
-
-        async function deleteKey(key) {
-            const baseUrl = document.getElementById('api-url').value.replace(/\/$/, "");
-            if(!confirm(`XÓA vĩnh viễn key này?\n${key}`)) return;
-
-            try {
-                const res = await fetch(`${baseUrl}/api/admin/delete`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
-                    body: JSON.stringify({ key })
-                });
-                const d = await res.json();
-                if(d.success) { alert("Đã xóa key!"); const activeTab = document.querySelector('.tab.active').getAttribute('onclick').includes('official') ? 'official' : 'temp'; loadKeys(activeTab); }
-                else alert("Lỗi: " + d.message);
-            } catch(e) { alert("Lỗi kết nối"); }
-        }
-
-        function genManual() {
-            const type = document.getElementById('mn-type').value;
-            const dev = parseInt(document.getElementById('mn-dev').value);
-            const days = parseInt(document.getElementById('mn-days').value);
-            const note = document.getElementById('mn-note').value;
-            const key = (type==='permanent' ? 'VIP-' : 'TEMP-') + Math.random().toString(36).substr(2, 8).toUpperCase();
-            const data = { type: type, status: type==='permanent' ? 'official' : 'temp', duration_seconds: days * 86400, max_devices: dev, devices: [], activated_at: null, expires_at: null, note: note };
-            document.getElementById('mn-out').value = `KEY: ${key}\nVALUE: ${JSON.stringify(data)}`;
+        async function deleteKey(keyName) {
+            if(confirm('Xóa key ' + keyName + '?')) {
+                // Gọi API delete (Cần implement trong Worker)
+                alert('Chức năng đang phát triển trong worker');
+            }
         }
     </script>
 </body>
